@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Modi & Modi - Bar & Ristorante</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"/>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head>
+<body>
+  <main class="container">
+    <div class="logo fade-in">
+      <img src="logo.jpg" alt="Logo Modi & Modi" />
+    </div>
+    <h1 class="title fade-in">MODI & MODI</h1>
+    <p class="subtitle fade-in">BAR • RISTORANTE</p>
+    <section class="section slide-up">
+      <h3>Dove Siamo</h3>
+      <div class="socials">
+        <div class="social-card">
+          <a href="https://maps.app.goo.gl/fB9x9ZSYtYyLshVE6?g_st=ac" target="_blank" rel="noopener">
+            <i class="fas fa-map-marker-alt"></i> Vedi sulla Mappa
+          </a>
+          <div class="handle">Clicca per aprire Google Maps</div>
+        </div>
+      </div>
+    </section>
+    <section class="section slide-up">
+      <h3>Seguici</h3>
+      <div class="socials">
+        <div class="social-card">
+          <a href="https://www.instagram.com/modimodi24.7?igsh=ZG40Nmt5d2R0dnIy" target="_blank" rel="noopener">
+            <i class="fab fa-instagram"></i> Instagram
+          </a>
+          <div class="handle">@modimodi24.7</div>
+        </div>
+        <div class="social-card">
+          <a href="https://www.facebook.com/share/1BPEsgfY4t/" target="_blank" rel="noopener">
+            <i class="fab fa-facebook"></i> Facebook
+          </a>
+          <div class="handle">@Modi & Modi</div>
+        </div>
+        <div class="social-card">
+          <a href="https://www.tiktok.com/@modimodi24.7?_t=ZN-8z3z8szYyqE&_r=1" target="_blank" rel="noopener">
+            <i class="fab fa-tiktok"></i> TikTok
+          </a>
+          <div class="handle">@modimodi24.7</div>
+        </div>
+      </div>
+    </section>
+    <section class="section slide-up delay-1">
+      <h3>Accesso WiFi</h3>
+      <div class="wifi-box">
+        <span>NOME RETE</span>
+        <p id="ssid">Modi&Modi</p>
+        <button class="copy-btn" data-copy-target="#ssid">
+          <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
+            <path d="M280 64h40c35.3 0 64 28.7 64 64V448c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V128C0 92.7 28.7 64 64 64h40 9.6C121 27.5 153.3 0 192 0s71 27.5 78.4 64H280zM64 112c-8.8 0-16 7.2-16 16V448c0 8.8 7.2 16 16 16H320c8.8 0 16-7.2 16-16V128c0-8.8-7.2-16-16-16H304v24c0 13.3-10.7 24-24 24H192 104c-13.3 0-24-10.7-24-24V112H64zm128-8a24 24 0 1 0 0-48 24 24 0 1 0 0 48z"/>
+          </svg>
+        </button>
+      </div>
+      <div class="wifi-box">
+        <span>PASSWORD</span>
+        <p id="password">Modi123</p>
+        <button class="copy-btn" data-copy-target="#password">
+          <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
+            <path d="M280 64h40c35.3 0 64 28.7 64 64V448c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V128C0 92.7 28.7 64 64 64h40 9.6C121 27.5 153.3 0 192 0s71 27.5 78.4 64H280zM64 112c-8.8 0-16 7.2-16 16V448c0 8.8 7.2 16 16 16H320c8.8 0 16-7.2 16-16V128c0-8.8-7.2-16-16-16H304v24c0 13.3-10.7 24-24 24H192 104c-13.3 0-24-10.7-24-24V112H64zm128-8a24 24 0 1 0 0-48 24 24 0 1 0 0 48z"/>
+          </svg>
+        </button>
+      </div>
+      <p class="note">Tocca per copiare le credenziali WiFi</p>
+    </section>
+    <section class="menu-placeholder slide-up delay-2">
+      📖 Il nostro menù sarà disponibile qui a breve!
+    </section>
+  </main>
+  <div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+  <script src="app.js"></script>
+</body>
+</html>

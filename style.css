@@ -183,6 +183,17 @@ html, body {
   overflow-x: hidden;
   width: 100%;
 }
+/* Add this to your style.css file */
+.location-text {
+  color: #c9d2ff;
+  font-size: 14px;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  text-align: center;
+}
+
 .map-box {
   border-radius: 12px;
   overflow: hidden;

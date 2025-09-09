@@ -1,0 +1,1533 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>სამართავი პანელი - Modi & Modi</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@700;900&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"/>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<style>
+:root {
+  --bg: #0d0d0f;
+  --panel: #1a1a1f;
+  --panel-2: #23232a;
+  --card: #2d2d36;
+  --card-hover: #3a3a45;
+  --accent: #d4af37;
+  --text: #f5f5f5;
+  --danger: #c15757;
+  --success: #4a8f5a;
+  --error: #c15757;
+  --secondary-text: #c0c0c0;
+  --info: #4a76a8;
+}
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  position: relative;
+}
+.panel {
+  max-width: 600px;
+  width: 100%;
+  background: var(--panel);
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 0 30px rgba(0,0,0,0.6);
+  position: relative;
+  z-index: 1;
+}
+h2 {
+  font-family: 'Poppins', sans-serif;
+  color: var(--accent);
+  margin-bottom: 20px;
+  text-align: center;
+}
+.form-group {
+  margin-bottom: 15px;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--card);
+  color: var(--text);
+  box-sizing: border-box;
+  border: 1px solid #3a3a45;
+}
+.form-group textarea { resize: none; }
+button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--accent);
+  color: #0d0d0f;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+button:hover { background: #e0c267; }
+button.danger { background: var(--danger); color: white; }
+button.danger:hover { background: #d46b6b; }
+button.info { background: var(--info); color: white; }
+button.info:hover { background: #5a86b8; }
+button.order { background: var(--panel-2); color: white; padding: 6px; }
+button.order:hover { background: var(--card); }
+.hidden { display: none; }
+.tabs { display: flex; margin-bottom: 20px; border-bottom: 1px solid var(--card); }
+.tab { padding: 10px 20px; cursor: pointer; background: transparent; border: none; color: var(--text); border-bottom: 3px solid transparent; }
+.tab.active { border-bottom: 3px solid var(--accent); color: var(--accent); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.items-by-category { margin-top: 20px; }
+.category-section { margin-bottom: 25px; background: var(--panel-2); padding: 15px; border-radius: 12px; }
+.category-header { font-family: 'Poppins', sans-serif; color: var(--accent); margin-bottom: 15px; padding-bottom: 8px; border-bottom: 1px solid var(--card); display: flex; justify-content: space-between; align-items: center; }
+.item-list { display: grid; gap: 12px; }
+.item-card { background: var(--card); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; transition: transform 0.2s; }
+.item-card:hover { transform: translateY(-2px); }
+.item-info { flex: 1; }
+.item-name { font-weight: bold; margin-bottom: 5px;}
+.item-details { font-size: 12px; color: var(--secondary-text); }
+.item-actions { display: flex; gap: 8px; }
+.item-actions button { width: auto; padding: 6px 12px; }
+.category-list { margin-top: 20px; }
+.category-item { background: var(--card); padding: 12px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+.category-item-content { display: flex; align-items: center; gap: 10px; flex: 1; }
+.category-order { display: flex; flex-direction: column; gap: 5px; margin-right: 10px; }
+.empty-state { text-align: center; padding: 20px; color: var(--secondary-text); font-style: italic; }
+
+.search-highlight {
+  background-color: #d4af37;
+  color: #0d0d0f;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.modal {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  padding: 15px 25px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s ease;
+  z-index: 9999;
+  color: #0d0d0f;
+}
+modal.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+modal.success { background: var(--success); }
+modal.error { background: var(--error); }
+
+.confirm-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  background: var(--panel-2);
+  padding: 20px 25px;
+  border-radius: 12px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.6);
+  color: #fff;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.25s ease;
+  z-index: 10000;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+}
+.confirm-modal.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+}
+.confirm-modal p { margin-bottom: 20px; }
+.confirm-modal .buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+}
+.confirm-modal button {
+  flex: 1;
+  padding: 10px 0;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+.confirm-modal button:first-child { background: #6b6bff; color: #fff; }
+.confirm-modal button:last-child { background: var(--danger); color: #fff; }
+
+.login-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.login-header i {
+  font-size: 48px;
+  color: var(--accent);
+  margin-bottom: 10px;
+  display: block;
+}
+
+.login-header h2 {
+  margin-bottom: 5px;
+}
+
+.login-subtitle {
+  color: var(--secondary-text);
+  font-size: 14px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.price-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.price-control input {
+  flex: 1;
+}
+
+.price-btn {
+  width: auto;
+  padding: 12px;
+  background: var(--panel-2);
+  color: var(--text);
+}
+
+.price-btn:hover {
+  background: var(--card);
+}
+
+.price-btn.active {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.optional-field {
+  color: var(--secondary-text);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.clone-indicator {
+  background: var(--info);
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  text-align: center;
+  font-weight: bold;
+  color: white;
+}
+
+.order-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.order-btn {
+  width: 30px;
+  height: 25px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.order-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.order-btn:disabled:hover {
+  background: var(--panel-2);
+}
+.loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(13, 13, 15, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loader-content {
+  text-align: center;
+  color: var(--accent);
+}
+
+.loader-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid var(--panel-2);
+  border-top: 5px solid var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loader p {
+  font-size: 18px;
+  font-weight: 600;
+}
+.loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(13, 13, 15, 0.95);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loader.hidden {
+  display: none;
+}
+
+.loader-content {
+  text-align: center;
+  color: var(--accent);
+}
+
+.loader-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid var(--panel-2);
+  border-top: 5px solid var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loader p {
+  font-size: 18px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+}
+
+.verification-container {
+  text-align: center;
+  padding: 20px;
+}
+
+.verification-inputs {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.verification-input {
+  width: 50px;
+  height: 60px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  border-radius: 8px;
+  border: 2px solid var(--card);
+  background: var(--panel-2);
+  color: var(--text);
+}
+
+.verification-input:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.verification-resend {
+  margin-top: 20px;
+  color: var(--secondary-text);
+}
+
+.verification-resend a {
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.verification-timer {
+  margin-top: 10px;
+  font-size: 14px;
+  color: var(--secondary-text);
+}
+
+.email-input-group {
+  margin-bottom: 15px;
+}
+.modal.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+.modal.success {
+  background: var(--success);
+}
+.modal.error {
+  background: var(--error);
+}
+
+</style>
+
+</head>
+<body>
+<div id="loader" class="loader hidden">
+  <div class="loader-content">
+    <div class="loader-spinner"></div>
+    <p id="loader-text">მოწმდება კავშირი...</p>
+  </div>
+</div>
+<div class="panel">
+  <div id="login-section">
+    <div class="login-header">
+      <i class="fas fa-lock"></i>
+      <h2>ავტორიზაცია</h2>
+      <p class="login-subtitle">შეიყვანეთ თქვენი მონაცემები სამართავ პანელში შესასვლელად</p>
+    </div>
+    
+    <div class="form-group">
+      <input type="text" id="admin-user" placeholder="მომხმარებელი" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <input type="password" id="admin-pass" placeholder="პაროლი" autocomplete="current-password">
+    </div>
+    <div class="form-group email-input-group">
+      <input type="email" id="admin-email" placeholder="ელ. ფოსტა" autocomplete="email">
+    </div>
+    <button onclick="checkLogin()">შესვლა</button>
+  </div>
+  
+  <div id="verification-section" class="hidden">
+    <div class="login-header">
+      <i class="fas fa-envelope"></i>
+      <h2>ელ. ფოსტის დადასტურება</h2>
+      <p class="login-subtitle">შეიყვანეთ 6-ნიშნა კოდი, რომელიც გამოგეგზავნათ ელ. ფოსტაზე</p>
+    </div>
+    
+    <div class="verification-inputs">
+      <input type="text" class="verification-input" maxlength="1" oninput="moveToNext(this, 1)" onkeyup="handleVerificationInput(event, 0)">
+      <input type="text" class="verification-input" maxlength="1" oninput="moveToNext(this, 2)" onkeyup="handleVerificationInput(event, 1)">
+      <input type="text" class="verification-input" maxlength="1" oninput="moveToNext(this, 3)" onkeyup="handleVerificationInput(event, 2)">
+      <input type="text" class="verification-input" maxlength="1" oninput="moveToNext(this, 4)" onkeyup="handleVerificationInput(event, 3)">
+      <input type="text" class="verification-input" maxlength="1" oninput="moveToNext(this, 5)" onkeyup="handleVerificationInput(event, 4)">
+      <input type="text" class="verification-input" maxlength="1" oninput="moveToNext(this, 6)" onkeyup="handleVerificationInput(event, 5)">
+    </div>
+    
+    <button onclick="verifyCode()">დადასტურება</button>
+    
+    <div class="verification-resend">
+      <p>არ მოგივიდათ კოდი? <a onclick="resendVerificationCode()">მიიღე კოდი ხელახლა</a></p>
+      <div class="verification-timer" id="resend-timer"></div>
+    </div>
+    
+    <button class="danger" onclick="goBackToLogin()" style="margin-top: 15px;">უკან დაბრუნება</button>
+  </div>
+  
+  <div id="admin-panel" class="hidden">
+    <h2></h2>
+    
+    <div class="tabs">
+  <button class="tab active" onclick="switchTab('menu')">მენიუ</button>
+  <button class="tab" onclick="switchTab('categories')">კატეგორიები</button>
+  <button class="tab" onclick="switchTab('events')">ივენთი</button> <!-- NEW -->
+</div>
+
+<!-- NEW TAB CONTENT -->
+<!-- In the events tab section of admin.html -->
+<div id="events-tab" class="tab-content">
+  <div class="form-group">
+    <input type="text" id="event-title" placeholder="ივენთის ტექსტი">
+  </div>
+  <div class="form-group">
+    <label>დასრულების დრო:</label>
+    <input type="datetime-local" id="event-expiry" step="1">
+  </div>
+  <button id="event-btn" onclick="saveEvent()">ივენთის დამატება</button>
+  <div id="current-event" style="margin-top:15px;"></div>
+  
+  <!-- Add expired events section -->
+  <div id="expired-events" style="margin-top: 25px; display: none;">
+    <h3 style="color: var(--accent); margin-bottom: 15px; border-bottom: 1px solid var(--card); padding-bottom: 8px;">ვადაგასული ივენთები</h3>
+    <div id="expired-events-list"></div>
+  </div>
+</div>
+
+
+<!-- EXISTING MENU TAB (leave this as is) -->
+<div id="menu-tab" class="tab-content active">
+  <div id="clone-indicator" class="clone-indicator hidden">
+    <i class="fas fa-copy"></i> კოპირებულია: <span id="cloned-item-name"></span>
+    <button onclick="clearClone()" style="margin-left: 10px; padding: 4px 8px; background: rgba(255,255,255,0.2);">გასუფთავება</button>
+  </div>
+  <div class="form-group">
+    <select id="item-category"></select>
+  </div>
+  <div id="editing-category-indicator" class="hidden" style="
+    background: var(--card);
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    text-align: center;
+    font-weight: bold;
+    color: var(--accent);
+">
+    რედაქტირდება კატეგორიიდან: <span id="current-category-name"></span>
+  </div>
+
+      <div class="form-group">
+        <input type="text" id="item-name" placeholder="სახელი *" required>
+      </div>
+      <div class="form-group">
+        <textarea id="item-desc" placeholder="აღწერა (არასავალდებულო)" rows="4"></textarea>
+      </div>
+      <div class="form-group">
+        <div class="price-control">
+          <input type="number" id="item-price-glass" placeholder="ფასი *" step="0.01">
+          <button class="price-btn" onclick="adjustGlassPrice(-0.5)">-0.50</button>
+          <button class="price-btn" onclick="adjustGlassPrice(0.5)">+0.50</button>
+          <button type="button" class="price-btn" onclick="toggleBottlePrice()" id="bottle-price-toggle">
+            <i class="fas fa-plus"></i> ბოთლის ფასი
+          </button>
+        </div>
+      </div>
+
+      <div class="form-group hidden" id="bottle-price-group">
+        <div class="price-control">
+          <input type="number" id="item-price-bottle" placeholder="ბოთლის ფასი" step="0.01">
+          <button class="price-btn" onclick="adjustBottlePrice(-0.5)">-0.50</button>
+          <button class="price-btn" onclick="adjustBottlePrice(0.5)">+0.50</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <input type="text" id="item-image" placeholder="სურათის URL(ლინკი)">
+      </div>
+      <button onclick="addMenuItem()">დამატება</button>
+      <div class="form-group">
+        <input type="text" id="search-input" placeholder="ძებნა...(მოიძიე ნივთის სახელით)" oninput="searchItems()" style="margin-top:15px;">
+      </div>
+      <div class="items-by-category" id="items-by-category"></div>
+    </div>
+    
+    <div id="categories-tab" class="tab-content">
+      <div class="form-group">
+        <input type="text" id="category-name" placeholder="კატეგორიის სახელი">
+      </div>
+      <button onclick="addCategory()">კატეგორიის დამატება</button>
+      
+      <div style="margin: 20px 0; padding: 10px; background: var(--panel-2); border-radius: 8px;">
+        <p style="text-align: center; margin: 0; color: var(--accent);">
+          <i class="fas fa-arrows-alt-v"></i> გადაადგილება: დააჭირე ისრებს კატეგორიის სამართავად
+        </p>
+      </div>
+      
+      <div class="category-list" id="category-list"></div>
+    </div>
+    
+    <p style="color:var(--secondary-text);font-size:12px;margin-top:20px; text-align: center;">
+      ცვლილებები შეინახება ავტომატურად. მენიუ განახლდება რეალურ დროში.
+    </p>
+    
+    <button class="danger" onclick="logout()" style="margin-top: 15px;">გამოსვლა</button>
+  </div>
+</div>
+
+<div id="modal" class="modal"></div>
+
+<div id="confirmModal" class="confirm-modal">
+  <p id="confirmText">დარწმუნებული ხარ?</p>
+  <div class="buttons">
+    <button id="confirmNo">გაუქმება</button>
+    <button id="confirmYes">დადასტურება</button>
+  </div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCYNhOoTmQF_18TsGnNj8Cy8gPuUYo60f0",
+  authDomain: "modi-modi-6bec7.firebaseapp.com",
+  projectId: "modi-modi-6bec7",
+  storageBucket: "modi-modi-6bec7.firebasestorage.app",
+  messagingSenderId: "240993739197",
+  appId: "1:240993739197:web:852972b3b36a937e6ab2d4",
+  measurementId: "G-N8NPV4L211"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+const modal = document.getElementById("modal");
+const confirmModal = document.getElementById("confirmModal");
+const confirmText = document.getElementById("confirmText");
+const confirmYes = document.getElementById("confirmYes");
+const confirmNo = document.getElementById("confirmNo");
+let confirmCallback = null;
+
+function showModal(message, type="success") {
+  modal.textContent = message;
+  modal.className = `modal show ${type}`;
+  setTimeout(()=>{ modal.classList.remove("show"); }, 2000);
+}
+
+function showConfirm(message, callback) {
+  confirmText.textContent = message;
+  confirmModal.classList.add("show");
+  confirmCallback = callback;
+}
+confirmYes.onclick = ()=>{ confirmModal.classList.remove("show"); if(confirmCallback) confirmCallback(true); confirmCallback=null; };
+confirmNo.onclick = ()=>{ confirmModal.classList.remove("show"); if(confirmCallback) confirmCallback(false); confirmCallback=null; };
+
+const ADMIN_USERNAME = "admin";
+const ADMIN_PASSWORD = "adminzura";
+const ADMIN_EMAIL = "pirtskhalaishvilizura5@gmail.com";
+
+let menuData = {
+  categories: [],
+  items: []
+};
+let editingItemId=null;
+let editingCategoryId=null;
+let cloningItemId=null;
+let unsubscribeMenu = null;
+
+let verificationCode = null;
+let verificationCodeExpiry = null;
+let resendTimer = null;
+
+function checkLogin() {
+  const username = document.getElementById("admin-user").value.trim();
+  const password = document.getElementById("admin-pass").value.trim();
+  const email = document.getElementById("admin-email").value.trim();
+
+  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    if (email === ADMIN_EMAIL) {
+      const loader = document.getElementById("loader");
+      loader.classList.remove("hidden");
+      document.getElementById("loader-text").textContent = "მიმდინარეობს ავტორიზაცია...";
+
+      db.collection("emails").doc("reserved").set({
+        email: email,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      sendVerificationCode(email).then(success => {
+        setupVerificationInputs();
+        loader.classList.add("hidden");
+        if (success) {
+          document.getElementById("login-section").classList.add("hidden");
+          document.getElementById("verification-section").classList.remove("hidden");
+          startResendTimer();
+          focusFirstVerificationInput();
+        } else {
+          showModal("ვერ მოხერხდა ვერიფიკაციის კოდის გაგზავნა", "error");
+        }
+      });
+    } else {
+      showModal("არასწორი ინფორმაცია", "error");
+    }
+  } else {
+    showModal("არასწორი ინფორმაცია", "error");
+  }
+}
+
+
+
+function validateEmail(email) {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(email);
+}
+
+async function sendVerificationCode(email) {
+  try {
+    verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    verificationCodeExpiry = Date.now() + 10 * 60 * 1000;
+
+    const res = await emailjs.send("service_wdxdy7q", "template_l1vbvkl", {
+      email: email,
+      code: verificationCode
+    });
+
+    showModal("ვერიფიკაციის კოდი გამოგზავნილია!", "success");
+    return true;
+  } catch (error) {
+    console.error("Error sending code:", error);
+    showModal("ელ. ფოსტის გაგზავნა ვერ მოხერხდა", "error");
+    return false;
+  }
+}
+async function resendVerificationCode() {
+  const email = document.getElementById("admin-email").value.trim();
+  
+  // Check if timer is still active
+  if (resendTimer) {
+    showModal("გთხოვთ დაიცადოთ სანამ კოდის ხელახლა გაგზავნა შესაძლებელი გახდება", "error");
+    return;
+  }
+  
+  const loader = document.getElementById("loader");
+  loader.classList.remove("hidden");
+  document.getElementById("loader-text").textContent = "კოდის გაგზავნა...";
+  
+  try {
+    const success = await sendVerificationCode(email);
+    loader.classList.add("hidden");
+    
+    if (success) {
+      showModal("ახალი კოდი გამოგზავნილია!", "success");
+      startResendTimer();
+      focusFirstVerificationInput();
+    } else {
+      showModal("ვერ მოხერხდა კოდის გაგზავნა", "error");
+    }
+  } catch (error) {
+    loader.classList.add("hidden");
+    console.error("Error resending code:", error);
+    showModal("კოდის გაგზავნის შეცდომა", "error");
+  }
+}
+function setupVerificationInputs() {
+  const inputs = document.querySelectorAll('.verification-input');
+  inputs.forEach((input, index) => {
+    input.addEventListener("input", () => {
+      if (input.value.length === 1 && index < inputs.length - 1) {
+        inputs[index + 1].focus();
+      }
+    });
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Backspace" && !input.value && index > 0) {
+        inputs[index - 1].focus();
+      }
+    });
+  });
+}
+
+
+function handleVerificationInput(event, index) {
+  if (event.key === 'Backspace') {
+    const currentInput = document.querySelector(`.verification-input:nth-child(${index + 1})`);
+    if (currentInput && currentInput.value === '') {
+      if (index > 0) {
+        const prevInput = document.querySelector(`.verification-input:nth-child(${index})`);
+        if (prevInput) prevInput.focus();
+      }
+    }
+  }
+}
+
+function focusFirstVerificationInput() {
+  const firstInput = document.querySelector('.verification-input:nth-child(1)');
+  if (firstInput) firstInput.focus();
+}
+
+function getVerificationCode() {
+  const inputs = document.querySelectorAll('.verification-input');
+  let code = '';
+  inputs.forEach(input => {
+    code += input.value;
+  });
+  return code;
+}
+
+function verifyCode() {
+  const enteredCode = getVerificationCode();
+  const currentTime = Date.now();
+  
+  if (enteredCode.length !== 6) {
+    showModal("გთხოვთ შეიყვანოთ სრული 6-ნიშნა კოდი", "error");
+    return;
+  }
+  
+  if (currentTime > verificationCodeExpiry) {
+    showModal("ვერიფიკაციის კოდი ვადაგასულია. გთხოვთ მოითხოვოთ ახალი კოდი", "error");
+    return;
+  }
+  
+  if (enteredCode === verificationCode) {
+    const loader = document.getElementById("loader");
+    loader.classList.remove("hidden");
+    document.getElementById("loader-text").textContent = "მიმდინარეობს შესვლა...";
+    
+    setTimeout(() => {
+      loader.classList.add("hidden");
+      document.getElementById("verification-section").classList.add("hidden");
+      document.getElementById("admin-panel").classList.remove("hidden");
+      
+      showWelcomeMessage();
+      loadMenuData();
+      
+      const inputs = document.querySelectorAll('.verification-input');
+      inputs.forEach(input => input.value = '');
+    }, 1500);
+  } else {
+    showModal("არასწორი ვერიფიკაციის კოდი", "error");
+  }
+}
+
+function startResendTimer() {
+  clearInterval(resendTimer);
+  
+  let timeLeft = 60;
+  const timerElement = document.getElementById("resend-timer");
+  const resendLink = document.querySelector(".verification-resend a");
+  
+  resendLink.style.pointerEvents = "none";
+  resendLink.style.opacity = "0.5";
+  
+  timerElement.textContent = `კოდის ხელახლა გაგზავნა შესაძლებელი იქნება ${timeLeft} წამში`;
+  
+  resendTimer = setInterval(() => {
+    timeLeft--;
+    
+    if (timeLeft <= 0) {
+      clearInterval(resendTimer);
+      resendTimer = null;
+      timerElement.textContent = "";
+      
+      // Enable resend link
+      resendLink.style.pointerEvents = "auto";
+      resendLink.style.opacity = "1";
+    } else {
+      timerElement.textContent = `კოდის ხელახლა გაგზავნა შესაძლებელი იქნება ${timeLeft} წამში`;
+    }
+  }, 1000);
+}
+
+function goBackToLogin() {
+  document.getElementById("verification-section").classList.add("hidden");
+  document.getElementById("login-section").classList.remove("hidden");
+  
+  const inputs = document.querySelectorAll('.verification-input');
+  inputs.forEach(input => input.value = '');
+  
+  clearInterval(resendTimer);
+  resendTimer = null;
+  document.getElementById("resend-timer").textContent = "";
+}
+
+function showWelcomeMessage() {
+  showModal("მოგესალმები!", "success");
+  
+  const title = document.querySelector("#admin-panel h2");
+  if (title) {
+    const originalTitle = title.innerHTML;
+    title.innerHTML = `<span style="color: var(--accent);  display: block; margin-top: 5px;">სამართავი პანელი</span>`;
+    
+    setTimeout(() => {
+      title.innerHTML = "სამართავი პანელი";
+    }, 5000);
+  }
+}
+
+function logout() {
+  clearEditState();
+  
+  document.querySelector("#admin-panel h2").innerHTML = "სამართავი პანელი";
+  
+  document.getElementById("login-section").classList.remove("hidden");
+  document.getElementById("admin-panel").classList.add("hidden");
+  document.getElementById("admin-user").value = "";
+  document.getElementById("admin-pass").value = "";
+  document.getElementById("admin-email").value = "";
+  
+  if (unsubscribeMenu) {
+    unsubscribeMenu();
+  }
+  
+  verificationCode = null;
+  verificationCodeExpiry = null;
+  clearInterval(resendTimer);
+  resendTimer = null;
+}
+
+function loadMenuData() {
+  unsubscribeMenu = db.collection("menu").doc("data").onSnapshot((doc) => {
+    if (doc.exists) {
+      const data = doc.data();
+      menuData.categories = data.categories || [];
+      menuData.items = data.items || [];
+      let needsUpdate = false;
+      menuData.items.forEach(item => {
+        if (item.price !== undefined && item.price !== null) {
+          if (item.priceGlass === undefined || item.priceGlass === null) {
+            item.priceGlass = item.price;
+            needsUpdate = true;
+          }
+          delete item.price;
+          needsUpdate = true;
+        }
+      });
+      
+      if (needsUpdate) {
+        db.collection("menu").doc("data").set(menuData)
+          .then(() => {
+            loadCategories(); 
+            loadItemsByCategory(); 
+            loadCategoryList();
+          })
+          .catch((error) => {
+            loadCategories(); 
+            loadItemsByCategory(); 
+            loadCategoryList();
+          });
+      } else {
+        loadCategories(); 
+        loadItemsByCategory(); 
+        loadCategoryList();
+      }
+    } else {
+      const defaultData = {
+        categories: [],
+        items: []
+      };
+      db.collection("menu").doc("data").set(defaultData);
+      menuData = defaultData;
+      
+      loadCategories(); 
+      loadItemsByCategory(); 
+      loadCategoryList();
+    }
+  }, (error) => {
+    console.error("Error loading menu data:", error);
+    showModal("მენიუს მონაცემების ჩატვირთვის შეცდომა", "error");
+  });
+}
+
+function switchTab(tabName){
+  clearEditState();
+
+  document.querySelectorAll('.tab').forEach(tab=>tab.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+
+  if (tabName === 'menu') {
+    document.querySelector('.tab:nth-child(1)').classList.add('active');
+    document.getElementById('menu-tab').classList.add('active');
+  } else if (tabName === 'categories') {
+    document.querySelector('.tab:nth-child(2)').classList.add('active');
+    document.getElementById('categories-tab').classList.add('active');
+  } else if (tabName === 'events') {
+    document.querySelector('.tab:nth-child(3)').classList.add('active');
+    document.getElementById('events-tab').classList.add('active');
+  }
+}
+
+
+function loadCategories(){
+  const sel=document.getElementById("item-category");
+  sel.innerHTML="";
+  menuData.categories.forEach(c=>{
+    const opt=document.createElement("option"); opt.value=c.id; opt.textContent=c.name; sel.appendChild(opt);
+  });
+}
+
+function loadCategoryList(){
+  const list=document.getElementById("category-list"); list.innerHTML="";
+  if(menuData.categories.length===0){ list.innerHTML='<div class="empty-state">ჯერ არ არის კატეგორიები</div>'; return; }
+  
+  menuData.categories.forEach((c, index) => {
+    const categoryItem=document.createElement("div");
+    categoryItem.className="category-item";
+    categoryItem.innerHTML=`
+      <div class="category-item-content">
+        <div class="order-buttons">
+          <button class="order-btn" onclick="moveCategoryUp(${c.id})" ${index === 0 ? 'disabled' : ''}>
+            <i class="fas fa-arrow-up"></i>
+          </button>
+          <button class="order-btn" onclick="moveCategoryDown(${c.id})" ${index === menuData.categories.length - 1 ? 'disabled' : ''}>
+            <i class="fas fa-arrow-down"></i>
+          </button>
+        </div>
+        <div>${c.name}</div>
+      </div>
+      <div class="item-actions">
+        <button onclick="editCategory(${c.id})">რედაქტირება</button>
+        <button class="danger" onclick="deleteCategory(${c.id})">წაშლა</button>
+      </div>`;
+    list.appendChild(categoryItem);
+  });
+}
+
+async function moveCategoryUp(categoryId) {
+  const index = menuData.categories.findIndex(c => c.id === categoryId);
+  if (index <= 0) return;
+  
+  [menuData.categories[index], menuData.categories[index - 1]] = 
+  [menuData.categories[index - 1], menuData.categories[index]];
+  
+  try {
+    await db.collection("menu").doc("data").set(menuData);
+    loadCategoryList();
+    loadCategories();
+    showModal("კატეგორიის თანმიმდევრობა განახლდა", "success");
+  } catch (error) {
+    console.error("Error moving category:", error);
+    showModal("კატეგორიის გადაადგილების შეცდომა", "error");
+  }
+}
+
+async function moveCategoryDown(categoryId) {
+  const index = menuData.categories.findIndex(c => c.id === categoryId);
+  if (index === -1 || index >= menuData.categories.length - 1) return;
+  
+  [menuData.categories[index], menuData.categories[index + 1]] = 
+  [menuData.categories[index + 1], menuData.categories[index]];
+  
+  try {
+    await db.collection("menu").doc("data").set(menuData);
+    loadCategoryList();
+    loadCategories();
+    showModal("კატეგორიის თანმიმდევრობა განახლდა", "success");
+  } catch (error) {
+    console.error("Error moving category:", error);
+    showModal("კატეგორიის გადაადგილების შეცდომა", "error");
+  }
+}
+
+async function addCategory(){
+  const name=document.getElementById("category-name").value.trim();
+  
+  if(!name) return showModal("გთხოვთ შეიყვანოთ კატეგორიის სახელი","error");
+  
+  try {
+    const categoryButton = document.querySelector("#categories-tab button");
+    
+    if(editingCategoryId){
+      const category=menuData.categories.find(c=>c.id===editingCategoryId);
+      if(category) {
+        category.name = name;
+      }
+      showModal("კატეგორია განახლდა!","success"); 
+      editingCategoryId=null;
+      
+      categoryButton.textContent = "კატეგორიის დამატება";
+      categoryButton.removeAttribute("data-editing");
+    } else {
+      const newId=menuData.categories.length>0?Math.max(...menuData.categories.map(c=>c.id))+1:1;
+      menuData.categories.push({
+        id: newId,
+        name,
+        order: menuData.categories.length
+      }); 
+      showModal("კატეგორია დაემატა!","success");
+    }
+    
+    await db.collection("menu").doc("data").set(menuData);
+    
+    loadCategories(); 
+    loadCategoryList();
+    document.getElementById("category-name").value="";
+  } catch (error) {
+    console.error("Error saving category:", error);
+    showModal("კატეგორიის შენახვის შეცდომა", "error");
+  }
+}
+
+function editCategory(id){
+  const category=menuData.categories.find(c=>c.id===id); if(!category) return;
+  document.getElementById("category-name").value=category.name; 
+  editingCategoryId=id;
+  
+  const categoryButton = document.querySelector("#categories-tab button");
+  categoryButton.textContent = "ცვლილებების შენახვა";
+  categoryButton.dataset.editing = "true";
+  
+  document.getElementById("category-name").focus();
+}
+
+async function deleteCategory(id){
+  showConfirm("დარწმუნებული ხარ, რომ გსურს ამ კატეგორიის წაშლა? ამ კატეგორიაში არსებული ყველა მონაცემიც წაიშლება.", async confirmed=>{
+    if(!confirmed) return;
+    
+    try {
+      menuData.items = menuData.items.filter(i => i.categoryId !== id);
+      
+      menuData.categories = menuData.categories.filter(c => c.id !== id);
+      
+      await db.collection("menu").doc("data").set(menuData);
+      
+      loadCategories(); 
+      loadCategoryList();
+      showModal("კატეგორია და მისი მონაცემები წაიშალა!","success");
+    } catch (error) {
+      console.error("Error deleting category:", error);
+      showModal("კატეგორიის წაშლის შეცდომა", "error");
+    }
+  });
+}
+
+function toggleBottlePrice() {
+  const bottleGroup = document.getElementById("bottle-price-group");
+  const toggleBtn = document.getElementById("bottle-price-toggle");
+  
+  if (bottleGroup.classList.contains("hidden")) {
+    bottleGroup.classList.remove("hidden");
+    toggleBtn.innerHTML = '<i class="fas fa-minus"></i> ბოთლის ფასი';
+    toggleBtn.classList.add("active");
+  } else {
+    bottleGroup.classList.add("hidden");
+    toggleBtn.innerHTML = '<i class="fas fa-plus"></i> ბოთლის ფასი';
+    toggleBtn.classList.remove("active");
+    document.getElementById("item-price-bottle").value = "";
+  }
+}
+
+function adjustBottlePrice(amount) {
+  const priceInput = document.getElementById("item-price-bottle");
+  let currentPrice = parseFloat(priceInput.value) || 0;
+  currentPrice += amount;
+  
+  if (currentPrice < 0) currentPrice = 0;
+  
+  priceInput.value = Math.round(currentPrice * 100) / 100;
+}
+
+function adjustGlassPrice(amount) {
+  const priceInput = document.getElementById("item-price-glass");
+  let currentPrice = parseFloat(priceInput.value) || 0;
+  currentPrice += amount;
+  
+  if (currentPrice < 0) currentPrice = 0;
+  
+  priceInput.value = Math.round(currentPrice * 100) / 100;
+}
+
+async function addMenuItem(){
+  const categoryId = parseInt(document.getElementById("item-category").value);
+  const name = document.getElementById("item-name").value.trim();
+  const description = document.getElementById("item-desc").value.trim();
+  const priceGlass = parseFloat(document.getElementById("item-price-glass").value);
+  const priceBottleInput = document.getElementById("item-price-bottle");
+  const priceBottle = priceBottleInput.value ? parseFloat(priceBottleInput.value) : null;
+  const image = document.getElementById("item-image").value.trim();
+  
+  if(!name || isNaN(priceGlass)) return showModal("გთხოვთ შეავსოთ სახელი და ფასი","error");
+  
+  try {
+    const itemButton = document.querySelector("#menu-tab button");
+    
+    if(editingItemId){
+      const item=menuData.items.find(i=>i.id===editingItemId);
+      if(item){
+        item.categoryId=categoryId;
+        item.name=name;
+        item.description=description || "";
+        item.priceGlass = isNaN(priceGlass) ? null : priceGlass;
+        item.priceBottle = isNaN(priceBottle) ? null : priceBottle;
+        
+        if (item.price !== undefined) {
+          delete item.price;
+        }
+        
+        item.image=image || "";
+      }
+      showModal("პოზიცია განახლდა!","success"); 
+      editingItemId=null;
+      cloningItemId=null;
+      
+      itemButton.textContent = "დამატება";
+      itemButton.removeAttribute("data-editing");
+      document.getElementById("editing-category-indicator").classList.add("hidden");
+      document.getElementById("clone-indicator").classList.add("hidden");
+    } else {
+      const newId=menuData.items.length>0?Math.max(...menuData.items.map(i=>i.id))+1:1;
+      menuData.items.push({
+        id:newId,
+        categoryId,
+        name,
+        description: description || "",
+        priceGlass: isNaN(priceGlass) ? null : priceGlass,
+        priceBottle: isNaN(priceBottle) ? null : priceBottle,
+        image: image || ""
+      }); 
+      showModal("დაემატა!","success");
+      
+      if (cloningItemId) {
+        cloningItemId = null;
+        document.getElementById("clone-indicator").classList.add("hidden");
+      }
+    }
+    
+    await db.collection("menu").doc("data").set(menuData);
+    
+    loadItemsByCategory();
+    document.getElementById("item-name").value="";
+    document.getElementById("item-desc").value="";
+    document.getElementById("item-price-glass").value="";
+    document.getElementById("item-price-bottle").value="";
+    document.getElementById("item-image").value="";
+    
+    document.getElementById("bottle-price-group").classList.add("hidden");
+    document.getElementById("bottle-price-toggle").innerHTML = '<i class="fas fa-plus"></i> ბოთლის ფასი';
+    document.getElementById("bottle-price-toggle").classList.remove("active");
+  } catch (error) {
+    console.error("Error saving menu item:", error);
+    showModal("მენიუს შენახვის შეცდომა", "error");
+  }
+}
+
+function loadItemsByCategory(){
+  const container=document.getElementById("items-by-category"); container.innerHTML="";
+  if(menuData.items.length===0){ container.innerHTML='<div class="empty-state">ჯერ არ არის მენიუ</div>'; return; }
+  
+  const sortedCategories = [...menuData.categories];
+  if (sortedCategories[0] && sortedCategories[0].order !== undefined) {
+    sortedCategories.sort((a, b) => a.order - b.order);
+  }
+  
+  sortedCategories.forEach(c=>{
+    const itemsInCategory=menuData.items.filter(i=>i.categoryId===c.id);
+    if(itemsInCategory.length===0) return;
+    
+    const categorySection=document.createElement("div"); categorySection.className="category-section";
+    categorySection.innerHTML=`<div class="category-header">${c.name}</div><div class="item-list" id="category-${c.id}"></div>`;
+    container.appendChild(categorySection);
+    
+    const itemList=document.getElementById(`category-${c.id}`);
+    itemsInCategory.forEach(i=>{
+      let priceText = "";
+      
+      const hasBottlePrice = i.priceBottle !== null && i.priceBottle !== undefined;
+      const hasGlassPrice = i.priceGlass !== null && i.priceGlass !== undefined;
+      
+      const hasSinglePrice = i.price !== null && i.price !== undefined;
+      
+      if (hasBottlePrice && hasGlassPrice) {
+        priceText = `Bottle: €${i.priceBottle.toFixed(2)} Glass: €${i.priceGlass.toFixed(2)}`;
+      } else if (hasBottlePrice) {
+        priceText = `€${i.priceBottle.toFixed(2)}`;
+      } else if (hasGlassPrice) {
+        priceText = `€${i.priceGlass.toFixed(2)}`;
+      } else if (hasSinglePrice) {
+        priceText = `€${i.price.toFixed(2)}`;
+      }
+      
+      const itemCard=document.createElement("div"); itemCard.className="item-card";
+      itemCard.innerHTML=`<div class="item-info">
+        <div class="item-name">${i.name}</div>
+        <div class="item-details">${i.description || "(აღწერა არ არის)"} - ${priceText}</div>
+      </div>
+      <div class="item-actions">
+        <button title="რედაქტირება" onclick="editItem(${i.id})"><i class="fas fa-edit"></i></button>
+        <button class="info" title="კლონი" onclick="cloneItem(${i.id})"><i class="fas fa-copy"></i></button>
+        <button class="danger" title="წაშლა" onclick="deleteItem(${i.id})"><i class="fas fa-trash"></i></button>
+      </div>`;
+      itemList.appendChild(itemCard);
+    });
+  });
+}
+
+function editItem(id){
+  const item=menuData.items.find(i=>i.id===id); 
+  if(!item) return;
+  
+  document.getElementById("item-category").value=item.categoryId;
+  document.getElementById("item-name").value=item.name;
+  document.getElementById("item-desc").value=item.description || "";
+  
+  if (item.priceGlass !== undefined && item.priceGlass !== null) {
+    document.getElementById("item-price-glass").value=item.priceGlass;
+  } else if (item.price !== undefined && item.price !== null) {
+    document.getElementById("item-price-glass").value=item.price;
+  } else {
+    document.getElementById("item-price-glass").value="";
+  }
+  
+  if (item.priceBottle) {
+    document.getElementById("item-price-bottle").value = item.priceBottle;
+    document.getElementById("bottle-price-group").classList.remove("hidden");
+    document.getElementById("bottle-price-toggle").innerHTML = '<i class="fas fa-minus"></i> ბოთლის ფასი';
+    document.getElementById("bottle-price-toggle").classList.add("active");
+  } else {
+    document.getElementById("item-price-bottle").value = "";
+    document.getElementById("bottle-price-group").classList.add("hidden");
+    document.getElementById("bottle-price-toggle").innerHTML = '<i class="fas fa-plus"></i> ბოთლის ფასი';
+    document.getElementById("bottle-price-toggle").classList.remove("active");
+  }
+  
+  document.getElementById("item-image").value=item.image || "";
+  editingItemId=id;
+  cloningItemId=null;
+  
+  const category = menuData.categories.find(c => c.id === item.categoryId);
+  if(category) {
+    document.getElementById("current-category-name").textContent = category.name;
+    document.getElementById("editing-category-indicator").classList.remove("hidden");
+  }
+  
+  document.getElementById("clone-indicator").classList.add("hidden");
+  
+  const itemButton = document.querySelector("#menu-tab button");
+  itemButton.textContent = "ცვლილებების შენახვა";
+  itemButton.dataset.editing = "true";
+  
+  document.getElementById("item-name").focus();
+}
+
+function cloneItem(id){
+  const item=menuData.items.find(i=>i.id===id); 
+  if(!item) return;
+  
+  document.getElementById("item-category").value=item.categoryId;
+  document.getElementById("item-name").value=item.name + " (კოპირებული)";
+  document.getElementById("item-desc").value=item.description || "";
+  document.getElementById("item-price-glass").value=item.priceGlass || "";
+  
+  if (item.priceBottle) {
+    document.getElementById("item-price-bottle").value = item.priceBottle;
+    document.getElementById("bottle-price-group").classList.remove("hidden");
+    document.getElementById("bottle-price-toggle").innerHTML = '<i class="fas fa-minus"></i> ბოთლის ფასი';
+    document.getElementById("bottle-price-toggle").classList.add("active");
+  } else {
+    document.getElementById("item-price-bottle").value = "";
+    document.getElementById("bottle-price-group").classList.add("hidden");
+    document.getElementById("bottle-price-toggle").innerHTML = '<i class="fas fa-plus"></i> ბოთლის ფასი';
+    document.getElementById("bottle-price-toggle").classList.remove("active");
+  }
+  
+  document.getElementById("item-image").value=item.image || "";
+  cloningItemId=id;
+  editingItemId=null;
+  
+  document.getElementById("editing-category-indicator").classList.add("hidden");
+  
+  document.getElementById("cloned-item-name").textContent = item.name;
+  document.getElementById("clone-indicator").classList.remove("hidden");
+  
+  const itemButton = document.querySelector("#menu-tab button");
+  itemButton.textContent = "დამატება";
+  itemButton.removeAttribute("data-editing");
+  
+  document.getElementById("item-name").focus();
+}
+
+function clearClone() {
+  cloningItemId = null;
+  document.getElementById("clone-indicator").classList.add("hidden");
+  clearEditState();
+}
+
+async function deleteItem(id){
+  showConfirm("დარწმუნებული ხარ, რომ გსურს წაშლა?", async confirmed=>{
+    if(!confirmed) return;
+    
+    try {
+      menuData.items=menuData.items.filter(i=>i.id!==id);
+      await db.collection("menu").doc("data").set(menuData);
+      
+      loadItemsByCategory();
+      showModal("წაიშალა!","success");
+    } catch (error) {
+      console.error("Error deleting item:", error);
+      showModal("წაშლის შეცდომა", "error");
+    }
+  });
+}
+
+function searchItems(){
+  const searchTerm=document.getElementById("search-input").value.toLowerCase();
+  if(!searchTerm) return loadItemsByCategory();
+  
+  const container=document.getElementById("items-by-category"); container.innerHTML="";
+  const filteredItems=menuData.items.filter(i=>
+    i.name.toLowerCase().includes(searchTerm) || 
+    (i.description && i.description.toLowerCase().includes(searchTerm))
+  );
+  if(filteredItems.length===0){ container.innerHTML='<div class="empty-state">შესაბამისი მონაცემები ვერ მოიძებნა</div>'; return; }
+  
+  const searchSection=document.createElement("div"); searchSection.className="category-section";
+  searchSection.innerHTML=`<div class="category-header">ძებნის შედეგები</div><div class="item-list"></div>`;
+  container.appendChild(searchSection);
+  
+  const itemList=searchSection.querySelector(".item-list");
+  filteredItems.forEach(i=>{
+    const category=menuData.categories.find(c=>c.id===i.categoryId);
+    const highlightedName=i.name.replace(new RegExp(searchTerm,'gi'),match=>`<span class="search-highlight">${match}</span>`);
+    const description = i.description || "(აღწერა არ არის)";
+    const highlightedDesc=description.replace(new RegExp(searchTerm,'gi'),match=>`<span class="search-highlight">${match}</span>`);
+    
+    const itemCard=document.createElement("div"); itemCard.className="item-card";
+    itemCard.innerHTML=`<div class="item-info">
+      <div class="item-name">${highlightedName} <span style="font-size:12px;color:var(--secondary-text);">(${category?.name||'უცნობი'})</span></div>
+      <div class="item-details">${highlightedDesc} - 
+        ${(i.priceBottle !== null && i.priceGlass !== null) ? 
+          `Bottle: €${i.priceBottle.toFixed(2)} Glass: €${i.priceGlass.toFixed(2)}` : 
+          (i.priceBottle !== null ? `€${i.priceBottle.toFixed(2)}` : 
+          (i.priceGlass !== null ? `€${i.priceGlass.toFixed(2)}` : ""))}
+      </div>
+    </div>
+    <div class="item-actions">
+      <button title="რედაქტირება" onclick="editItem(${i.id})"><i class="fas fa-edit"></i></button>
+      <button class="info" title="კლონი" onclick="cloneItem(${i.id})"><i class="fas fa-copy"></i></button>
+      <button class="danger" title="წაშლა" onclick="deleteItem(${i.id})"><i class="fas fa-trash"></i></button>
+    </div>`;
+    itemList.appendChild(itemCard);
+  });
+}
+
+function clearEditState() {
+  editingItemId = null;
+  editingCategoryId = null;
+  cloningItemId = null;
+  
+  const itemButton = document.querySelector("#menu-tab button");
+  const categoryButton = document.querySelector("#categories-tab button");
+  
+  itemButton.textContent = "დამატება";
+  itemButton.removeAttribute("data-editing");
+  
+  categoryButton.textContent = "კატეგორიის დამატება";
+  categoryButton.removeAttribute("data-editing");
+  
+  document.getElementById("editing-category-indicator").classList.add("hidden");
+  document.getElementById("clone-indicator").classList.add("hidden");
+  
+  document.getElementById("category-name").value = "";
+  document.getElementById("item-name").value = "";
+  document.getElementById("item-desc").value = "";
+  document.getElementById("item-price-glass").value = "";
+  document.getElementById("item-price-bottle").value = "";
+  document.getElementById("item-image").value = "";
+  
+  document.getElementById("bottle-price-group").classList.add("hidden");
+  document.getElementById("bottle-price-toggle").innerHTML = '<i class="fas fa-plus"></i> Bottle';
+  document.getElementById("bottle-price-toggle").classList.remove("active");
+}
+
+window.addEventListener('beforeunload', () => {
+  if (unsubscribeMenu) {
+    unsubscribeMenu();
+  }
+  
+  clearInterval(resendTimer);
+});
+let editingEvent = false;
+
+async function saveEvent() {
+  const text = document.getElementById("event-title").value.trim();
+  const expiry = document.getElementById("event-expiry").value;
+
+  if (!text || !expiry) return showModal("გთხოვთ შეავსოთ ყველა ველი", "error");
+
+  try {
+    const expiryTimestamp = new Date(expiry).getTime();
+    
+    await db.collection("event").doc("current").set({
+      text,
+      expiry: expiryTimestamp
+    });
+    
+    showModal(editingEvent ? "ივენთი განახლდა!" : "ივენთი შეინახა!", "success");
+    document.getElementById("event-title").value = "";
+    document.getElementById("event-expiry").value = "";
+    document.getElementById("event-btn").textContent = "ივენთის დამატება";
+    editingEvent = false;
+    loadEvent();
+  } catch (err) {
+    console.error(err);
+    showModal("შენახვის შეცდომა", "error");
+  }
+}
+
+function loadEvent() {
+  db.collection("event").doc("current").onSnapshot(doc => {
+    const container = document.getElementById("current-event");
+    if (doc.exists) {
+      const data = doc.data();
+      const date = new Date(data.expiry).toLocaleString();
+      container.innerHTML = `
+        <div class="item-card">
+          <div class="item-info">
+            <div class="item-name">${data.text}</div>
+            <div class="item-details">დასრულება: ${date}</div>
+          </div>
+          <div class="item-actions">
+            <button onclick="editEvent()">რედაქტირება</button>
+            <button class="danger" onclick="removeEvent()">წაშლა</button>
+          </div>
+        </div>
+      `;
+    } else {
+      container.innerHTML = "<div class='empty-state'>ამჟამად ივენთი არ არის</div>";
+    }
+  });
+}
+
+function editEvent() {
+  db.collection("event").doc("current").get().then(doc => {
+    if (doc.exists) {
+      const data = doc.data();
+      document.getElementById("event-title").value = data.text;
+      document.getElementById("event-expiry").value = new Date(data.expiry).toISOString().slice(0,16);
+      document.getElementById("event-btn").textContent = "ცვლილებების შენახვა";
+      editingEvent = true;
+    }
+  });
+}
+
+function removeEvent() {
+  showConfirm("დარწმუნებული ხარ, რომ გსურს ივენთის წაშლა?", confirmed => {
+    if (!confirmed) return;
+    db.collection("event").doc("current").delete()
+      .then(() => {
+        showModal("ივენთი წაიშალა!", "success");
+        document.getElementById("event-title").value = "";
+        document.getElementById("event-expiry").value = "";
+        document.getElementById("event-btn").textContent = "ივენთის დამატება";
+        editingEvent = false;
+      })
+      .catch(err => {
+        console.error(err);
+        showModal("ივენთის წაშლის შეცდომა", "error");
+      });
+  });
+}
+
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<script>
+  (function(){
+    emailjs.init("zdcNXlycC7oMCjpfN");
+  })();
+</script>
+
+</body>
+</html>

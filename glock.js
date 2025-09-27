@@ -34,8 +34,8 @@ confirmYes.onclick = ()=>{ confirmModal.classList.remove("show"); if(confirmCall
 confirmNo.onclick = ()=>{ confirmModal.classList.remove("show"); if(confirmCallback) confirmCallback(false); confirmCallback=null; };
 
 // Your UID for authentication
-const ADMIN_UID = "7VNK2iQfIiT4ERPX2fLqIHgRLCY2";
-const ADMIN_EMAIL = "lukito.kldiashvili@bk.ru";
+const ADMIN_UID = "60EdjBt6uaROes2PLOwfxWmcL2h2";
+const ADMIN_EMAIL = "pirtskhalaishvilizura5@gmail.com";
 const ADMIN_PASSWORD = "adminzura";
 
 let menuData = {
@@ -1083,4 +1083,5 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelector('.tab:nth-child(3)').addEventListener('click', function() {
     setTimeout(loadEvents, 100);
   });
+
 });

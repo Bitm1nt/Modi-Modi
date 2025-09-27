@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Modi & Modi - Bar & Ristorante</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@700;900&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"/>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <link rel="stylesheet" href="glick.css">
+</head>
+<body>
+<script>
+console.log("████████████████████████████████████████")
+console.log("████████████████████████████████████████")
+console.log("██████▀░░░░░░░░▀████████▀▀░░░░░░░▀██████")
+console.log("████▀░░░░░░░░░░░░▀████▀░░░░░░░░░░░░▀████")
+console.log("██▀░░░░░░░░░░░░░░░░▀▀░░░░░░░░░░░░░░░░▀██")
+console.log("██░░░░░░░░░░░░░░░░░░░▄▄░░░░░░░░░░░░░░░██")
+console.log("██░░░░░░░░░░░░░░░░░░█░█░░░░░░░░░░░░░░░██")
+console.log("██░░░░░░░░░░░░░░░░░▄▀░█░░░░░░░░░░░░░░░██")
+console.log("██░░░░░░░░░░████▄▄▄▀░░▀▀▀▀▄░░░░░░░░░░░██")
+console.log("██▄░░░░░░░░░████░░░░░░░░░░█░░░░░░░░░░▄██")
+console.log("████▄░░░░░░░████░░░░░░░░░░█░░░░░░░░▄████")
+console.log("██████▄░░░░░████▄▄▄░░░░░░░█░░░░░░▄██████")
+console.log("████████▄░░░▀▀▀▀░░░▀▀▀▀▀▀▀░░░░░▄████████")
+console.log("██████████▄░░░░░░░░░░░░░░░░░░▄██████████")
+console.log("████████████▄░░░░░░░░░░░░░░▄████████████")
+console.log("██████████████▄░░░░░░░░░░▄██████████████")
+console.log("████████████████▄░░░░░░▄████████████████")
+console.log("██████████████████▄▄▄▄██████████████████")
+console.log("████████████████████████████████████████")
+console.log("████████████████████████████████████████")
+</script>
+
+  <main class="container">
+    <div class="logo"><img src="logo.jpg" alt="Logo"></div>
+    <h1 class="title">MODI & MODI</h1>
+    <p class="subtitle">BAR • RISTORANTE</p>
+    <section class="section">
+      <h3>Dove Siamo</h3>
+      <div class="socials">
+        <div class="map-box">
+          <iframe
+            src="https://www.google.com/maps?q=%E1%83%9B%E1%83%9D%E1%83%93%E1%83%98+%E1%83%9B%E1%83%9D%E1%83%93%E1%83%98%2C+Piazza+2+Giugno%2C+1%2C+56028+San+Miniato+PI&output=embed"
+            width="100%" height="260" style="border:0;" allowfullscreen="" loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade">
+          </iframe>
+        </div>
+        <div class="social-card">
+          <a href="https://maps.app.goo.gl/fB9x9ZSYtYyLshVE6?g_st=ac" target="_blank"><i class="fas fa-map-marker-alt"></i> Apri in Google Maps</a>
+          <div class="handle">Clicca per aprire Google Maps</div>
+        </div>
+      </div>
+      <div class="video-section">
+        <h3>Benvenuti da Modi & Modi</h3>
+        <div class="welcome-video">
+          <video id="welcomeVideo" autoplay muted loop playsinline>
+            <source src="ssssssss.mp4" type="video/mp4">
+            Il tuo browser non supporta il tag video.
+          </video>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h3>Seguici</h3>
+      <div class="socials">
+        <div class="social-card"><a href="https://instagram.com/modimodi24.7" target="_blank"><i class="fab fa-instagram"></i> Instagram</a><div class="handle">@modimodi24.7</div></div>
+        <div class="social-card"><a href="https://facebook.com/modimodi" target="_blank"><i class="fab fa-facebook"></i> Facebook</a><div class="handle">@Modi & Modi</div></div>
+        <div class="social-card"><a href="https://vm.tiktok.com/ZNd44e1Vw/" target="_blank"><i class="fab fa-tiktok"></i> TikTok</a><div class="handle">@modimodi24.7</div></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h3>Accesso WiFi</h3>
+      <div class="wifi-box">
+        <span>NOME RETE</span>
+        <p id="ssid">TIM-83014541</p>
+        <button class="copy-btn" onclick="copyText('ssid')">📋</button>
+      </div>
+      <div class="wifi-box">
+        <span>PASSWORD</span>
+        <p id="password">PYcAhLu9ygkQGFPt</p>
+        <button class="copy-btn" onclick="copyText('password')">📋</button>
+      </div>
+      <p class="note">Tocca per copiare le credenziali WiFi</p>
+    </section>
+    <section class="section" id="menu-section">
+      <h3>Il Nostro Menù</h3>
+      <!-- UPDATED: Changed to grid layout -->
+      <div id="event-banner" class="hidden"></div>
+      <div class="menu-categories-grid" id="menu-categories-grid"></div>
+      <div id="sticky-category-header" class="sticky-category-header hidden"></div>
+      <h3>Scelta</h3>
+      <div class="menu-items" id="menu-items"><div class="menu-loading"><i class="fas fa-spinner fa-spin"></i> Caricamento menù...</div></div>
+    </section>
+  </main>
+  <div id="toast" class="toast">Copiato!</div>
+  <script src="glick.js"></script>
+</body>
+</html>

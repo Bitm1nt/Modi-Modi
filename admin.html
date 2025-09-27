@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>სამართავი პანელი - Modi & Modi</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@700;900&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"/>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<link rel="stylesheet" href="glock.css">
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<script>
+  (function(){
+    emailjs.init("zdcNXlycC7oMCjpfN"); // Your public key
+  })();
+</script>
+</head>
+<body>
+  <script>
+console.log("████████████████████████████████████████")
+console.log("████████████████████████████████████████")
+console.log("██████▀░░░░░░░░▀████████▀▀░░░░░░░▀██████")
+console.log("████▀░░░░░░░░░░░░▀████▀░░░░░░░░░░░░▀████")
+console.log("██▀░░░░░░░░░░░░░░░░▀▀░░░░░░░░░░░░░░░░▀██")
+console.log("██░░░░░░░░░░░░░░░░░░░▄▄░░░░░░░░░░░░░░░██")
+console.log("██░░░░░░░░░░░░░░░░░░█░█░░░░░░░░░░░░░░░██")
+console.log("██░░░░░░░░░░░░░░░░░▄▀░█░░░░░░░░░░░░░░░██")
+console.log("██░░░░░░░░░░████▄▄▄▀░░▀▀▀▀▄░░░░░░░░░░░██")
+console.log("██▄░░░░░░░░░████░░░░░░░░░░█░░░░░░░░░░▄██")
+console.log("████▄░░░░░░░████░░░░░░░░░░█░░░░░░░░▄████")
+console.log("██████▄░░░░░████▄▄▄░░░░░░░█░░░░░░▄██████")
+console.log("████████▄░░░▀▀▀▀░░░▀▀▀▀▀▀▀░░░░░▄████████")
+console.log("██████████▄░░░░░░░░░░░░░░░░░░▄██████████")
+console.log("████████████▄░░░░░░░░░░░░░░▄████████████")
+console.log("██████████████▄░░░░░░░░░░▄██████████████")
+console.log("████████████████▄░░░░░░▄████████████████")
+console.log("██████████████████▄▄▄▄██████████████████")
+console.log("████████████████████████████████████████")
+console.log("████████████████████████████████████████")
+</script>
+<div id="loader" class="loader hidden">
+  <div class="loader-content">
+    <div class="loader-spinner"></div>
+    <p id="loader-text">მოწმდება კავშირი...</p>
+  </div>
+</div>
+<div class="panel">
+  <div id="login-section">
+    <div class="login-header">
+      <i class="fas fa-lock"></i>
+      <h2>ავტორიზაცია</h2>
+      <p class="login-subtitle">შეიყვანეთ თქვენი მონაცემები სამართავ პანელში შესასვლელად</p>
+    </div>
+    
+    <div class="form-group">
+      <input type="text" id="admin-user" placeholder="მომხმარებელი" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <input type="password" id="admin-pass" placeholder="პაროლი" autocomplete="current-password">
+    </div>
+    <div class="form-group email-input-group">
+      <input type="email" id="admin-email" placeholder="ელ. ფოსტა" autocomplete="email">
+    </div>
+    <button onclick="checkLogin()">შესვლა</button>
+  </div>
+  
+  <div id="verification-section" class="hidden">
+    <div class="login-header">
+      <i class="fas fa-envelope"></i>
+      <h2>ელ. ფოსტის დადასტურება</h2>
+      <p class="login-subtitle">შეიყვანეთ 6-ნიშნა კოდი, რომელიც გამოგეგზავნათ ელ. ფოსტაზე</p>
+    </div>
+    
+    <div class="verification-inputs">
+      <input type="text" class="verification-input" maxlength="1" oninput="moveToNext(this, 1)" onkeyup="handleVerificationInput(event, 0)">
+      <input type="text" class="verification-input" maxlength="1" oninput="moveToNext(this, 2)" onkeyup="handleVerificationInput(event, 1)">
+      <input type="text" class="verification-input" maxlength="1" oninput="moveToNext(this, 3)" onkeyup="handleVerificationInput(event, 2)">
+      <input type="text" class="verification-input" maxlength="1" oninput="moveToNext(this, 4)" onkeyup="handleVerificationInput(event, 3)">
+      <input type="text" class="verification-input" maxlength="1" oninput="moveToNext(this, 5)" onkeyup="handleVerificationInput(event, 4)">
+      <input type="text" class="verification-input" maxlength="1" oninput="moveToNext(this, 6)" onkeyup="handleVerificationInput(event, 5)">
+    </div>
+    
+    <button onclick="verifyCode()">დადასტურება</button>
+    
+    <div class="verification-resend">
+      <p>არ მოგივიდათ კოდი? <a onclick="resendVerificationCode()">მიიღე კოდი ხელახლა</a></p>
+      <div class="verification-timer" id="resend-timer"></div>
+    </div>
+    
+    <button class="danger" onclick="goBackToLogin()" style="margin-top: 15px;">უკან დაბრუნება</button>
+  </div>
+  
+  <div id="admin-panel" class="hidden">
+    <h2></h2>
+    
+    <div class="tabs">
+  <button class="tab active" onclick="switchTab('menu')">მენიუ</button>
+  <button class="tab" onclick="switchTab('categories')">კატეგორიები</button>
+  <button class="tab" onclick="switchTab('events')">ივენთი</button> <!-- NEW -->
+</div>
+
+<!-- NEW TAB CONTENT -->
+<!-- In the events tab section of admin.html -->
+<div id="events-tab" class="tab-content">
+  <div class="form-group">
+    <input type="text" id="event-title" placeholder="ივენთის ტექსტი">
+  </div>
+  <div class="form-group">
+    <label>დასრულების დრო:</label>
+    <input type="datetime-local" id="event-expiry" step="1">
+  </div>
+  <button id="event-btn" onclick="saveEvent()">ივენთის დამატება</button>
+  <div id="current-event" style="margin-top:15px;"></div>
+  
+  <!-- Add expired events section -->
+  <div id="expired-events" style="margin-top: 25px; display: none;">
+    <h3 style="color: var(--accent); margin-bottom: 15px; border-bottom: 1px solid var(--card); padding-bottom: 8px;">ვადაგასული ივენთები</h3>
+    <div id="expired-events-list"></div>
+  </div>
+</div>
+
+
+<!-- EXISTING MENU TAB (leave this as is) -->
+<div id="menu-tab" class="tab-content active">
+  <div id="clone-indicator" class="clone-indicator hidden">
+    <i class="fas fa-copy"></i> კოპირებულია: <span id="cloned-item-name"></span>
+    <button onclick="clearClone()" style="margin-left: 10px; padding: 4px 8px; background: rgba(255,255,255,0.2);">გასუფთავება</button>
+  </div>
+  <div class="form-group">
+    <select id="item-category"></select>
+  </div>
+  <div id="editing-category-indicator" class="hidden" style="
+    background: var(--card);
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    text-align: center;
+    font-weight: bold;
+    color: var(--accent);
+">
+    რედაქტირდება კატეგორიიდან: <span id="current-category-name"></span>
+  </div>
+
+      <div class="form-group">
+        <input type="text" id="item-name" placeholder="სახელი *" required>
+      </div>
+      <div class="form-group">
+        <textarea id="item-desc" placeholder="აღწერა (არასავალდებულო)" rows="4"></textarea>
+      </div>
+      <div class="form-group">
+        <div class="price-control">
+          <input type="number" id="item-price-glass" placeholder="ფასი *" step="0.01">
+          <button class="price-btn" onclick="adjustGlassPrice(-0.5)">-0.50</button>
+          <button class="price-btn" onclick="adjustGlassPrice(0.5)">+0.50</button>
+          <button type="button" class="price-btn" onclick="toggleBottlePrice()" id="bottle-price-toggle">
+            <i class="fas fa-plus"></i> ბოთლის ფასი
+          </button>
+        </div>
+      </div>
+
+      <div class="form-group hidden" id="bottle-price-group">
+        <div class="price-control">
+          <input type="number" id="item-price-bottle" placeholder="ბოთლის ფასი" step="0.01">
+          <button class="price-btn" onclick="adjustBottlePrice(-0.5)">-0.50</button>
+          <button class="price-btn" onclick="adjustBottlePrice(0.5)">+0.50</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <input type="text" id="item-image" placeholder="სურათის URL(ლინკი)">
+      </div>
+      <button onclick="addMenuItem()">დამატება</button>
+      <div class="form-group">
+        <input type="text" id="search-input" placeholder="ძებნა...(მოიძიე ნივთის სახელით)" oninput="searchItems()" style="margin-top:15px;">
+      </div>
+      <div class="items-by-category" id="items-by-category"></div>
+    </div>
+    
+    <div id="categories-tab" class="tab-content">
+      <div class="form-group">
+        <input type="text" id="category-name" placeholder="კატეგორიის სახელი">
+      </div>
+      <button onclick="addCategory()">კატეგორიის დამატება</button>
+      
+      <div style="margin: 20px 0; padding: 10px; background: var(--panel-2); border-radius: 8px;">
+        <p style="text-align: center; margin: 0; color: var(--accent);">
+          <i class="fas fa-arrows-alt-v"></i> გადაადგილება: დააჭირე ისრებს კატეგორიის სამართავად
+        </p>
+      </div>
+      <div class="category-list" id="category-list"></div>
+    </div>
+    <p style="color:var(--secondary-text);font-size:12px;margin-top:20px; text-align: center;">
+      ცვლილებები შეინახება ავტომატურად. მენიუ განახლდება რეალურ დროში.
+    </p>
+    
+    <button class="danger" onclick="logout()" style="margin-top: 15px;">გამოსვლა</button>
+  </div>
+</div>
+<div id="modal" class="modal"></div>
+<div id="confirmModal" class="confirm-modal">
+  <p id="confirmText">დარწმუნებული ხარ?</p>
+  <div class="buttons">
+    <button id="confirmNo">გაუქმება</button>
+    <button id="confirmYes">დადასტურება</button>
+  </div>
+</div>
+<script src="glock.js"></script>
+</body>
+</html>

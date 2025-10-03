@@ -289,7 +289,7 @@ document.addEventListener('keydown', function() {
       });
     },
     
-    detectDevTools() {
+detectDevTools() {
       // Size-based detection
       const checkDevTools = () => {
         const threshold = 150;
@@ -320,79 +320,7 @@ document.addEventListener('keydown', function() {
         };
       });
     },
-    
-    showWarning(message) {
-      // Create a subtle warning notification
-      const warning = document.createElement('div');
-      warning.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #c15757;
-        color: white;
-        padding: 10px 15px;
-        border-radius: 5px;
-        z-index: 10000;
-        font-family: Arial;
-        font-size: 14px;
-      `;
-      warning.textContent = message;
-      document.body.appendChild(warning);
-      
-      setTimeout(() => {
-        if (document.body.contains(warning)) {
-          document.body.removeChild(warning);
-        }
-      }, 2000);
-    },
-    
-    handleViolation() {
-      // Redirect to home or show blocking page
-      if (!window.devtoolsBlocked) {
-        window.devtoolsBlocked = true;
-        
-        // Clear the page
-        document.body.innerHTML = `
-          <div style="
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'Inter', sans-serif;
-            text-align: center;
-            padding: 20px;
-          ">
-            <div>
-              <h1 style="color: var(--accent); margin-bottom: 20px;">
-                <i class="fas fa-ban"></i> Access Restricted
-              </h1>
-              <p style="margin-bottom: 15px; line-height: 1.5;">
-                Developer tools are not permitted on this page.<br>
-                Please close any open developer tools and refresh the page.
-              </p>
-              <button onclick="location.reload()" style="
-                background: var(--accent);
-                color: var(--bg);
-                border: none;
-                padding: 10px 20px;
-                border-radius: 5px;
-                cursor: pointer;
-                font-weight: bold;
-              ">
-                Reload Page
-              </button>
-            </div>
-          </div>
-        `;
-        
-        // Disable all interactions
-        document.addEventListener('keydown', (e) => e.preventDefault());
-        document.addEventListener('click', (e) => e.preventDefault());
-        document.addEventListener('contextmenu', (e) => e.preventDefault());
-      }
-    }
+
   };
   
   // Initialize when DOM is loaded

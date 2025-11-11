@@ -149,8 +149,8 @@ async function sendVerificationCode(email) {
     };
 
     const res = await emailjs.send(
-      "service_wdxdy7q",
-      "template_l1vbvkl",
+      "service_snpy3xh",
+      "template_n63skw8",
       templateParams
     );
 
@@ -1085,3 +1085,4 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
 });
+

@@ -149,7 +149,7 @@ async function sendVerificationCode(email) {
     };
 
     const res = await emailjs.send(
-      "service_ok4l8hd",
+      "service_snpy3xh",
       "template_n63skw8",
       templateParams
     );
@@ -1085,6 +1085,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
 });
+
 
 
 

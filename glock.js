@@ -33,10 +33,10 @@ function showConfirm(message, callback) {
 confirmYes.onclick = ()=>{ confirmModal.classList.remove("show"); if(confirmCallback) confirmCallback(true); confirmCallback=null; };
 confirmNo.onclick = ()=>{ confirmModal.classList.remove("show"); if(confirmCallback) confirmCallback(false); confirmCallback=null; };
 
-// Your UID for authentication
-const ADMIN_UID = "60EdjBt6uaROes2PLOwfxWmcL2h2";
-const ADMIN_EMAIL = "pirtskhalaishvilizura5@gmail.com";
+// Hardcoded credentials
+const ADMIN_USERNAME = "admin";
 const ADMIN_PASSWORD = "adminzura";
+const ADMIN_EMAIL = "pirtskhalaishvilizura5@gmail.com";
 
 let menuData = {
   categories: [],
@@ -46,10 +46,6 @@ let editingItemId=null;
 let editingCategoryId=null;
 let cloningItemId=null;
 let unsubscribeMenu = null;
-
-let verificationCode = null;
-let verificationCodeExpiry = null;
-let resendTimer = null;
 
 async function checkLogin() {
   const username = document.getElementById("admin-user").value.trim();
@@ -72,10 +68,17 @@ async function checkLogin() {
   document.getElementById("loader-text").textContent = "მიმდინარეობს ავტორიზაცია...";
 
   try {
-    // Check credentials first
-    if (username === "admin" && password === ADMIN_PASSWORD && email === ADMIN_EMAIL) {
-      // Authenticate with Firebase using UID-based approach
-      await firebaseAuthLogin(email, password);
+    // Check hardcoded credentials
+    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD && email === ADMIN_EMAIL) {
+      // Direct login without Firebase authentication
+      setTimeout(() => {
+        loader.classList.add("hidden");
+        document.getElementById("login-section").classList.add("hidden");
+        document.getElementById("admin-panel").classList.remove("hidden");
+        
+        showWelcomeMessage();
+        loadMenuData();
+      }, 1000);
     } else {
       loader.classList.add("hidden");
       showModal("არასწორი მომხმარებელი, პაროლი ან ელ. ფოსტა", "error");
@@ -88,241 +91,9 @@ async function checkLogin() {
   }
 }
 
-// Firebase authentication function
-async function firebaseAuthLogin(email, password) {
-  try {
-    // Sign in with email and password
-    const userCredential = await auth.signInWithEmailAndPassword(email, password);
-    const user = userCredential.user;
-    
-    console.log("Logged in user UID:", user.uid);
-    
-    // Verify this is the correct UID
-    if (user.uid === ADMIN_UID) {
-      // Send verification code
-      const success = await sendVerificationCode(email);
-      document.getElementById("loader").classList.add("hidden");
-      
-      if (success) {
-        document.getElementById("login-section").classList.add("hidden");
-        document.getElementById("verification-section").classList.remove("hidden");
-        startResendTimer();
-        focusFirstVerificationInput();
-      }
-    } else {
-      // UID doesn't match - sign out and show error
-      await auth.signOut();
-      document.getElementById("loader").classList.add("hidden");
-      showModal("არასწორი უფლებები", "error");
-    }
-    
-  } catch (error) {
-    console.error("Firebase auth error:", error);
-    document.getElementById("loader").classList.add("hidden");
-    
-    if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
-      showModal("არასწორი ელ. ფოსტა ან პაროლი", "error");
-    } else {
-      showModal("ავტორიზაციის შეცდომა: " + error.message, "error");
-    }
-  }
-}
-
 function validateEmail(email) {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return re.test(email);
-}
-
-async function sendVerificationCode(email) {
-  try {
-    verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-    verificationCodeExpiry = Date.now() + 10 * 60 * 1000;
-    
-    console.log("Sending verification code to:", email);
-    console.log("Verification code:", verificationCode);
-
-    const templateParams = {
-      email: email,
-      from_name: "Modi & Modi Admin",
-      code: verificationCode,
-      subject: "Your Verification Code"
-    };
-
-    const res = await emailjs.send(
-      "service_snpy3xh",
-      "template_n63skw8",
-      templateParams
-    );
-
-    console.log("EmailJS response:", res);
-    showModal("ვერიფიკაციის კოდი გამოგზავნილია!", "success");
-    return true;
-    
-  } catch (error) {
-    console.error("Error sending code:", error);
-    showModal("ელ. ფოსტის გაგზავნა ვერ მოხერხდა: " + error.text, "error");
-    return false;
-  }
-}
-
-async function resendVerificationCode() {
-  const email = document.getElementById("admin-email").value.trim();
-  
-  if (resendTimer) {
-    showModal("გთხოვთ დაიცადოთ სანამ კოდის ხელახლა გაგზავნა შესაძლებელი გახდება", "error");
-    return;
-  }
-  
-  const loader = document.getElementById("loader");
-  loader.classList.remove("hidden");
-  document.getElementById("loader-text").textContent = "კოდის გაგზავნა...";
-  
-  try {
-    const success = await sendVerificationCode(email);
-    loader.classList.add("hidden");
-    
-    if (success) {
-      showModal("ახალი კოდი გამოგზავნილია!", "success");
-      startResendTimer();
-      setupVerificationInputs();
-      focusFirstVerificationInput();
-    }
-  } catch (error) {
-    loader.classList.add("hidden");
-    console.error("Error resending code:", error);
-    showModal("კოდის გაგზავნის შეცდომა", "error");
-  }
-}
-
-function setupVerificationInputs() {
-  const inputs = document.querySelectorAll('.verification-input');
-  inputs.forEach((input, index) => {
-    input.value = '';
-    input.addEventListener('input', (e) => {
-      if (e.target.value.length === 1 && index < inputs.length - 1) {
-        inputs[index + 1].focus();
-      }
-    });
-    
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Backspace' && e.target.value === '' && index > 0) {
-        inputs[index - 1].focus();
-      }
-    });
-  });
-}
-
-function moveToNext(input, nextIndex) {
-  if (input.value.length === 1) {
-    const inputs = document.querySelectorAll('.verification-input');
-    if (nextIndex < inputs.length) {
-      inputs[nextIndex].focus();
-    }
-  }
-}
-
-function handleVerificationInput(event, index) {
-  if (event.key === 'Backspace') {
-    const currentInput = document.querySelector(`.verification-input:nth-child(${index + 1})`);
-    if (currentInput && currentInput.value === '') {
-      if (index > 0) {
-        const prevInput = document.querySelector(`.verification-input:nth-child(${index})`);
-        if (prevInput) prevInput.focus();
-      }
-    }
-  }
-}
-
-function focusFirstVerificationInput() {
-  const firstInput = document.querySelector('.verification-input:nth-child(1)');
-  if (firstInput) firstInput.focus();
-}
-
-function getVerificationCode() {
-  const inputs = document.querySelectorAll('.verification-input');
-  let code = '';
-  inputs.forEach(input => {
-    code += input.value;
-  });
-  return code;
-}
-
-function verifyCode() {
-  const enteredCode = getVerificationCode();
-  const currentTime = Date.now();
-  
-  if (enteredCode.length !== 6) {
-    showModal("გთხოვთ შეიყვანოთ სრული 6-ნიშნა კოდი", "error");
-    return;
-  }
-  
-  if (currentTime > verificationCodeExpiry) {
-    showModal("ვერიფიკაციის კოდი ვადაგასულია. გთხოვთ მოითხოვოთ ახალი კოდი", "error");
-    return;
-  }
-  
-  if (enteredCode === verificationCode) {
-    const loader = document.getElementById("loader");
-    loader.classList.remove("hidden");
-    document.getElementById("loader-text").textContent = "მიმდინარეობს შესვლა...";
-    
-    setTimeout(() => {
-      loader.classList.add("hidden");
-      document.getElementById("verification-section").classList.add("hidden");
-      document.getElementById("admin-panel").classList.remove("hidden");
-      
-      showWelcomeMessage();
-      loadMenuData();
-      
-      const inputs = document.querySelectorAll('.verification-input');
-      inputs.forEach(input => input.value = '');
-    }, 1500);
-  } else {
-    showModal("არასწორი ვერიფიკაციის კოდი", "error");
-  }
-}
-
-function startResendTimer() {
-  clearInterval(resendTimer);
-  
-  let timeLeft = 60;
-  const timerElement = document.getElementById("resend-timer");
-  const resendLink = document.querySelector(".verification-resend a");
-  
-  resendLink.style.pointerEvents = "none";
-  resendLink.style.opacity = "0.5";
-  
-  timerElement.textContent = `კოდის ხელახლა გაგზავნა შესაძლებელი იქნება ${timeLeft} წამში`;
-  
-  resendTimer = setInterval(() => {
-    timeLeft--;
-    
-    if (timeLeft <= 0) {
-      clearInterval(resendTimer);
-      resendTimer = null;
-      timerElement.textContent = "";
-      
-      resendLink.style.pointerEvents = "auto";
-      resendLink.style.opacity = "1";
-    } else {
-      timerElement.textContent = `კოდის ხელახლა გაგზავნა შესაძლებელი იქნება ${timeLeft} წამში`;
-    }
-  }, 1000);
-}
-
-function goBackToLogin() {
-  document.getElementById("verification-section").classList.add("hidden");
-  document.getElementById("login-section").classList.remove("hidden");
-  
-  const inputs = document.querySelectorAll('.verification-input');
-  inputs.forEach(input => input.value = '');
-  
-  clearInterval(resendTimer);
-  resendTimer = null;
-  document.getElementById("resend-timer").textContent = "";
-  
-  // Sign out from Firebase when going back
-  auth.signOut();
 }
 
 function showWelcomeMessage() {
@@ -340,18 +111,17 @@ function showWelcomeMessage() {
 }
 
 function logout() {
-  auth.signOut().then(() => {
-    clearEditState();
-    document.querySelector("#admin-panel h2").innerHTML = "სამართავი პანელი";
-    document.getElementById("login-section").classList.remove("hidden");
-    document.getElementById("admin-panel").classList.add("hidden");
-    document.getElementById("admin-email").value = "";
-    document.getElementById("admin-pass").value = "";
-    
-    if (unsubscribeMenu) {
-      unsubscribeMenu();
-    }
-  });
+  clearEditState();
+  document.querySelector("#admin-panel h2").innerHTML = "სამართავი პანელი";
+  document.getElementById("login-section").classList.remove("hidden");
+  document.getElementById("admin-panel").classList.add("hidden");
+  document.getElementById("admin-email").value = "";
+  document.getElementById("admin-pass").value = "";
+  document.getElementById("admin-user").value = "";
+  
+  if (unsubscribeMenu) {
+    unsubscribeMenu();
+  }
 }
 
 function loadMenuData() {
@@ -1060,33 +830,21 @@ async function deleteEvent(eventId) {
 
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
-  // Set up verification inputs
-  setupVerificationInputs();
-  
   // Set up enter key listeners for login
   document.getElementById("admin-pass").addEventListener("keypress", function(e) {
     if (e.key === "Enter") checkLogin();
   });
   
-  // Set up enter key listeners for verification
-  document.querySelectorAll('.verification-input').forEach((input, index) => {
-    input.addEventListener("keypress", function(e) {
-      if (e.key === "Enter") {
-        if (index === 5) {
-          verifyCode();
-        }
-      }
-    });
+  document.getElementById("admin-email").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") checkLogin();
+  });
+  
+  document.getElementById("admin-user").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") checkLogin();
   });
   
   // Load events when events tab is clicked
   document.querySelector('.tab:nth-child(3)').addEventListener('click', function() {
     setTimeout(loadEvents, 100);
   });
-
 });
-
-
-
-
-
